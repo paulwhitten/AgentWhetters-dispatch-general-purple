@@ -35,7 +35,7 @@ http-server = [
 
 [[package]]
 name = "agentwhetters-general-purple"
-version = "0.1.0"
+version = "1.0.0"
 source = { virtual = "." }
 dependencies = [
     { name = "a2a-sdk", extra = ["http-server"] },
