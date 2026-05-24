@@ -7,15 +7,6 @@ def agent_url(request):
     return request.config.getoption("--agent-url")
 
 
-def pytest_addoption(parser):
-    parser.addoption(
-        "--agent-url",
-        action="store",
-        default="http://localhost:9009",
-        help="URL of the running agent to test against",
-    )
-
-
 @pytest.mark.asyncio
 async def test_agent_card(agent_url):
     """Verify the agent card is served at the well-known endpoint."""
