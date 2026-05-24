@@ -4,18 +4,19 @@
   config_schema: {
     type: "object",
     properties: {
-      openai_api_key: { type: "string", secret: true },
+      openai_api_key: { type: "string", secret: true, default: "" },
       azure_openai_endpoint: {
         type: "string",
         description: "Azure OpenAI endpoint URL (e.g. https://your-resource.openai.azure.com/). Leave empty for standard OpenAI.",
+        default: "",
       },
       azure_openai_api_version: {
         type: "string",
         description: "Azure OpenAI API version",
         default: "2025-04-01-preview",
       },
-      anthropic_api_key: { type: "string", secret: true },
-      gemini_api_key: { type: "string", secret: true },
+      anthropic_api_key: { type: "string", secret: true, default: "" },
+      gemini_api_key: { type: "string", secret: true, default: "" },
       model_name: {
         type: "string",
         description: "Primary LLM model for complex reasoning tasks",
@@ -43,11 +44,11 @@
       PYTHONUNBUFFERED: "1",
       AGENT_MODEL: "${config.model_name}",
       AGENT_CHEAP_MODEL: "${config.cheap_model_name}",
-      OPENAI_API_KEY: { when: "config.openai_api_key", value: "${config.openai_api_key}" },
-      AZURE_OPENAI_ENDPOINT: { when: "config.azure_openai_endpoint", value: "${config.azure_openai_endpoint}" },
-      AZURE_OPENAI_API_VERSION: { when: "config.azure_openai_api_version", value: "${config.azure_openai_api_version}" },
-      ANTHROPIC_API_KEY: { when: "config.anthropic_api_key", value: "${config.anthropic_api_key}" },
-      GOOGLE_API_KEY: { when: "config.gemini_api_key", value: "${config.gemini_api_key}" },
+      OPENAI_API_KEY: "${config.openai_api_key}",
+      AZURE_OPENAI_ENDPOINT: "${config.azure_openai_endpoint}",
+      AZURE_OPENAI_API_VERSION: "${config.azure_openai_api_version}",
+      ANTHROPIC_API_KEY: "${config.anthropic_api_key}",
+      GOOGLE_API_KEY: "${config.gemini_api_key}",
     },
 
     network: {
