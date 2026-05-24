@@ -7,7 +7,7 @@ import httpx
 from a2a.server.tasks import TaskUpdater
 from a2a.types import (
     Message, TaskState, Part, TextPart,
-    FilePart, DataPart,
+    FilePart, FileWithBytes, DataPart,
 )
 from a2a.utils import get_message_text, new_agent_text_message
 from openai import AsyncOpenAI, AsyncAzureOpenAI
@@ -240,10 +240,24 @@ class Agent:
                 input_text, task_type, updater, attachments,
             )
 
-        await updater.add_artifact(
-            parts=[Part(root=TextPart(text=result))],
-            name="result",
-        )
+        # MLE-bench: return CSV as FilePart so green agent can grade it
+        if task_type == "mle-bench" and result and not result.startswith("ERROR"):
+            import base64 as b64
+            await updater.add_artifact(
+                parts=[Part(root=FilePart(
+                    file=FileWithBytes(
+                        bytes=b64.b64encode(result.encode()).decode('ascii'),
+                        name="submission.csv",
+                        mime_type="text/csv",
+                    )
+                ))],
+                name="submission.csv",
+            )
+        else:
+            await updater.add_artifact(
+                parts=[Part(root=TextPart(text=result))],
+                name="result",
+            )
         tracker.log_summary()
 
     # ------------------------------------------------------------------

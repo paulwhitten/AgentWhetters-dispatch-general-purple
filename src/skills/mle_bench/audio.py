@@ -13,32 +13,32 @@ from pathlib import Path
 logger = logging.getLogger(__name__)
 
 
+def _find_audio_dir(data_dir: Path, prefix: str) -> Path | None:
+    """Find an audio directory matching prefix (e.g. 'train', 'test')."""
+    audio_exts = (".wav", ".mp3", ".flac", ".ogg", ".aif")
+    # Try exact match first, then prefix match
+    candidates = [data_dir / prefix]
+    candidates += sorted(
+        d for d in data_dir.iterdir()
+        if d.is_dir() and d.name.lower().startswith(prefix)
+    )
+    for d in candidates:
+        if d.exists() and d.is_dir():
+            if any(f.suffix.lower() in audio_exts for f in list(d.iterdir())[:20] if f.is_file()):
+                return d
+    return None
+
+
 def generate_audio_script(data_dir: Path, description: str) -> str | None:
     """Generate an audio classification script.
 
-    Expects train/ and test/ directories with audio files, plus a CSV with labels.
+    Handles varied directory structures (train/, train2/, etc.) and
+    label-in-filename patterns.
     """
-    train_dir = data_dir / "train"
-    test_dir = data_dir / "test"
-    train_csv = data_dir / "train.csv"
+    train_dir = _find_audio_dir(data_dir, "train")
+    test_dir = _find_audio_dir(data_dir, "test")
 
-    # Verify we have something to work with
-    has_audio_dir = train_dir.exists() and any(
-        f.suffix.lower() in (".wav", ".mp3", ".flac", ".ogg", ".aif")
-        for f in list(train_dir.iterdir())[:20] if f.is_file()
-    )
-    if not has_audio_dir:
-        # Check for nested audio
-        for d in (data_dir / "train").iterdir() if (data_dir / "train").exists() else []:
-            if d.is_dir():
-                has_audio_dir = any(
-                    f.suffix.lower() in (".wav", ".mp3", ".flac", ".ogg")
-                    for f in list(d.iterdir())[:5] if f.is_file()
-                )
-                if has_audio_dir:
-                    break
-
-    if not has_audio_dir:
+    if not train_dir:
         return None
 
     script = f"""import os
