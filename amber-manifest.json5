@@ -1,39 +1,19 @@
 {
-  manifest_version: "0.3.0",
+  manifest_version: "0.1.0",
 
   config_schema: {
     type: "object",
     properties: {
-      openai_api_key: { type: "string", secret: true, default: "" },
-      azure_openai_endpoint: {
-        type: "string",
-        description: "Azure OpenAI endpoint URL (e.g. https://your-resource.openai.azure.com/). Leave empty for standard OpenAI.",
-        default: "",
-      },
-      azure_openai_api_version: {
-        type: "string",
-        description: "Azure OpenAI API version",
-        default: "2025-04-01-preview",
-      },
-      anthropic_api_key: { type: "string", secret: true, default: "" },
-      gemini_api_key: { type: "string", secret: true, default: "" },
-      model_name: {
-        type: "string",
-        description: "Primary LLM model for complex reasoning tasks",
-        default: "gpt-5.4",
-      },
-      cheap_model_name: {
-        type: "string",
-        description: "Fast/cheap LLM model for classification and simple tasks",
-        default: "gpt-4o-mini",
-      },
+      openai_api_key: { type: "string", secret: true },
+      azure_openai_endpoint: { type: "string" },
+      azure_openai_api_version: { type: "string" },
+      anthropic_api_key: { type: "string", secret: true },
+      gemini_api_key: { type: "string", secret: true },
+      model_name: { type: "string" },
+      cheap_model_name: { type: "string" },
     },
-    required: [],
+    required: ["openai_api_key"],
     additionalProperties: false,
-  },
-
-  slots: {
-    proxy: { kind: "a2a", optional: true },
   },
 
   program: {
@@ -53,14 +33,8 @@
 
     network: {
       endpoints: [
-        { name: "a2a_endpoint", port: 9009 },
+        { name: "endpoint", port: 9009 },
       ],
     },
   },
-
-  provides: {
-    a2a: { kind: "a2a", endpoint: "a2a_endpoint" },
-  },
-
-  exports: { a2a: "a2a" },
 }
