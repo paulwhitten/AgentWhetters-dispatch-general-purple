@@ -35,8 +35,6 @@ flowchart TD
     D --> J[NetArena MALT<br/>Graph code gen]
     D --> K[NetArena K8s<br/>NetworkPolicy debug]
     D --> L[OfficeQA<br/>BM25 RAG + code-gen]
-    D --> M[MAizeBargAIn<br/>Negotiation strategy]
-    D --> N[Web Research<br/>Search + extraction]
     D --> O[Dual-Model Fallback<br/>General reasoning]
 ```
 
@@ -54,12 +52,9 @@ Each skill was developed as a standalone agent in prior sprints, then integrated
 | NetArena MALT | Sprint 3 | Capacity graph analysis with Python code generation |
 | NetArena K8s | Sprint 3 | Kubernetes NetworkPolicy debugging via structured analysis |
 | OfficeQA | Sprint 2 | BM25 over Treasury Bulletins with LLM code-gen for table extraction |
-| MAizeBargAIn | Sprint 4 | Multi-turn negotiation with BATNA-aware concession strategy |
-| Web Research | Sprint 4 | Information retrieval via web search and content extraction |
 
 
-This agent's generality comes from covering enough categories (10+ specialized skills) that it appears general across the competition's benchmark set. The dual-model fallback provides a safety net for unrecognized tasks, but performance on truly novel problems will be handled by a fall-back
-mechanism.
+This agent's generality comes from covering 8 specialized skills plus a dual-model fallback for unrecognized tasks.
 
 The value of this architecture is:
 - Each skill was iteratively improved over multiple sprints with real benchmark feedback
