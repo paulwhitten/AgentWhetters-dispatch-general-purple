@@ -70,7 +70,7 @@ def main():
             "and other benchmark categories using task-adaptive strategies."
         ),
         url=args.card_url or f"http://{args.host}:{args.port}/",
-        version="1.0.9",
+        version="1.0.10",
         default_input_modes=["text"],
         default_output_modes=["text"],
         capabilities=AgentCapabilities(streaming=True),
