@@ -12,6 +12,17 @@ dependencies = [
     "pydantic>=2.12.5",
     "python-dotenv>=1.2.1",
     "uvicorn>=0.38.0",
+    # MLE-bench ML dependencies
+    "numpy>=1.26.0",
+    "pandas>=2.0.0",
+    "scikit-learn>=1.4.0",
+    "lightgbm>=4.0.0",
+    "xgboost>=2.0.0",
+    "catboost>=1.2.0",
+    "scipy>=1.12.0",
+    "Pillow>=10.0.0",
+    "torch>=2.2.0",
+    "torchvision>=0.17.0",
 ]
 
 [project.optional-dependencies]
