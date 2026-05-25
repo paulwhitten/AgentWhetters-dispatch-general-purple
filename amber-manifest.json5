@@ -5,9 +5,8 @@
     type: "object",
     properties: {
       openai_api_key: { type: "string", secret: true },
-      azure_openai_endpoint: { type: "string" },
     },
-    required: ["openai_api_key", "azure_openai_endpoint"],
+    required: ["openai_api_key"],
     additionalProperties: false,
   },
 
@@ -20,8 +19,6 @@
       AGENT_MODEL: "gpt-5.4",
       AGENT_CHEAP_MODEL: "gpt-4o-mini",
       OPENAI_API_KEY: "${config.openai_api_key}",
-      AZURE_OPENAI_ENDPOINT: "${config.azure_openai_endpoint}",
-      AZURE_OPENAI_API_VERSION: "2025-04-01-preview",
     },
 
     network: {
