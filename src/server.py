@@ -1,11 +1,14 @@
 import argparse
+import json
 import logging
 import os
+import uuid
 from datetime import datetime
 from pathlib import Path
 
 import uvicorn
 from dotenv import load_dotenv
+from starlette.types import ASGIApp, Receive, Scope, Send
 
 from a2a.server.apps import A2AStarletteApplication
 from a2a.server.request_handlers import DefaultRequestHandler
@@ -40,6 +43,73 @@ logger = logging.getLogger("agentwhetters")
 logger.info("Logging to %s", _log_file)
 
 
+class MessageIdMiddleware:
+    """ASGI middleware that injects messageId/taskId into A2A requests.
+
+    Some benchmark harnesses omit these fields which the a2a-sdk requires.
+    Without this patch, the server returns a 400 JSON error instead of SSE.
+    """
+
+    def __init__(self, app: ASGIApp) -> None:
+        self.app = app
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if scope["type"] != "http" or scope.get("method") != "POST":
+            await self.app(scope, receive, send)
+            return
+
+        body_parts: list[bytes] = []
+        request_complete = False
+
+        async def buffered_receive():
+            nonlocal request_complete
+            if request_complete:
+                return {"type": "http.request", "body": b"", "more_body": False}
+            msg = await receive()
+            body_parts.append(msg.get("body", b""))
+            if not msg.get("more_body", False):
+                request_complete = True
+            return msg
+
+        while not request_complete:
+            await buffered_receive()
+
+        body = b"".join(body_parts)
+        modified = False
+
+        try:
+            data = json.loads(body)
+            if (
+                isinstance(data, dict)
+                and data.get("method") in ("message/send", "message/stream")
+                and "params" in data
+            ):
+                msg = data["params"].get("message", {})
+                if isinstance(msg, dict) and "messageId" not in msg:
+                    msg["messageId"] = str(uuid.uuid4())
+                    modified = True
+                config = data["params"].setdefault("configuration", {})
+                if isinstance(config, dict) and "taskId" not in config:
+                    config["taskId"] = str(uuid.uuid4())
+                    modified = True
+        except (json.JSONDecodeError, KeyError, TypeError):
+            pass
+
+        if modified:
+            body = json.dumps(data).encode()
+
+        body_sent = False
+
+        async def replay_receive():
+            nonlocal body_sent
+            if not body_sent:
+                body_sent = True
+                return {"type": "http.request", "body": body, "more_body": False}
+            return await receive()
+
+        await self.app(scope, replay_receive, send)
+
+
 def main():
     parser = argparse.ArgumentParser(description="AgentWhetters General Purple Agent")
     parser.add_argument("--host", type=str, default="127.0.0.1", help="Host to bind the server")
@@ -70,7 +140,7 @@ def main():
             "and other benchmark categories using task-adaptive strategies."
         ),
         url=args.card_url or f"http://{args.host}:{args.port}/",
-        version="1.0.10",
+        version="1.0.11",
         default_input_modes=["text"],
         default_output_modes=["text"],
         capabilities=AgentCapabilities(streaming=True),
@@ -87,8 +157,11 @@ def main():
         max_content_length=None,
     )
 
+    app = server.build()
+    app.add_middleware(MessageIdMiddleware)
+
     logger.info("Starting AgentWhetters_general_purple on %s:%d", args.host, args.port)
-    uvicorn.run(server.build(), host=args.host, port=args.port)
+    uvicorn.run(app, host=args.host, port=args.port)
 
 
 if __name__ == "__main__":
